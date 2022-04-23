@@ -66,4 +66,5 @@ class keylogger:
         with open(f"sample_logs/{self.filename}.txt", "w") as f:
             # write the keylogs to the file
             print(self.log, file=f)
+            
         print(f"[+] Saved {self.filename}.txt")
