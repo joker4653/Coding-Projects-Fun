@@ -1,3 +1,3 @@
-Fun Coding Projects I've found on the internet and wanted to replicate
+Project Ideas found online implemented by me
 
-Note: Code is not unless specifically mentioned, otherwise code is taken from internet sources
+Note : implementations are mine unless otherwise referenced
