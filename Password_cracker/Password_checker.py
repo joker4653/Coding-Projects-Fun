@@ -1,0 +1,3 @@
+# check if password is in common list of passwords...
+# check if password matches OWSAP standards for passwords
+
